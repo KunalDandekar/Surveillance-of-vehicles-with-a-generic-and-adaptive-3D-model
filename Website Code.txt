@@ -1,0 +1,112 @@
+I.Userhome.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Configuration;
+using System.Data.SqlClient;
+
+public partial class _Default : System.Web.UI.Page
+{
+    private string cs = ConfigurationManager.ConnectionStrings["connect"].ConnectionString;
+    SqlConnection conn;
+    SqlCommand comm;
+    SqlDataAdapter adp;
+    SqlDataReader dr;
+    DataSet ds;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        conn = new SqlConnection(cs);
+        if (!IsPostBack)
+        {
+            DataTable dg = new DataTable();
+            using (SqlCommand cmd = new SqlCommand("select * from ocr_mate", conn))
+            {
+                using (SqlDataAdapter dp = new SqlDataAdapter(cmd))
+                {
+                    dp.Fill(dg);
+                }
+                GridView1.DataSource = dg;
+                GridView1.DataBind();
+            }
+        }
+    }
+}
+
+
+II.Login.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+
+public partial class _Default : System.Web.UI.Page
+{
+    private string cs = ConfigurationManager.ConnectionStrings["connect"].ConnectionString;
+    SqlConnection conn;
+    SqlCommand comm;
+    SqlDataAdapter adp;
+    SqlDataReader dr;
+    DataSet ds;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        conn = new SqlConnection(cs);
+    }
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+        DataTable dn = new DataTable();
+        using (SqlCommand cmd = new SqlCommand("select * from admin_master where username_=@username_ and password_=@password_", conn))
+        {
+            cmd.Parameters.AddWithValue("@username_", TextBox1.Text);
+            cmd.Parameters.AddWithValue("@password_", TextBox2.Text);
+            using (SqlDataAdapter adp = new SqlDataAdapter(cmd))
+            {
+                adp.Fill(dn);
+            }
+            if (dn.Rows.Count > 0)
+            {
+                Session["id"] = dn.Rows[0].ItemArray[0];
+                Response.Redirect("userhome.aspx");
+            }
+            else
+            {
+                Response.Write("<script>alert('Invalid Credentials!')</script>");
+                TextBox1.Text = "";
+                TextBox2.Text = "";
+            }
+        }
+    }
+}
+
+
+III.Logout.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class _Default : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        Session.Abandon();
+        Session.Clear();
+        Response.Redirect("home.aspx");
+    }
+}
+

@@ -1,0 +1,368 @@
+I.Form.cs
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Collections;
+using System.IO;
+using System.Drawing.Imaging;
+
+namespace OCRSample
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog op = new OpenFileDialog();
+            op.Title = "Select Image File";
+            op.FileName = "*.jpg";
+            if (op.ShowDialog() == DialogResult.OK)
+            {
+                // if (opos.LoadImage(op.FileName))
+                {
+                    try
+                    {
+                        // Grab Text From Image
+                        MODI.Document ModiObj = new MODI.Document();
+                        ModiObj.Create(op.FileName);
+                        ModiObj.OCR(MODI.MiLANGUAGES.miLANG_ENGLISH, true, true);
+
+                        //Retrieve the text gathered from the image
+                        MODI.Image ModiImageObj = (MODI.Image)ModiObj.Images[0];
+
+                        System.Console.WriteLine(ModiImageObj.Layout.Text);
+                        label1.Text = ModiImageObj.Layout.Text;
+                        ModiObj.Close();
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+
+                }
+            }
+
+
+           
+        }
+        
+        
+       </param>
+        public void CheckFileType(string directoryPath)
+        {
+            IEnumerator files = Directory.GetFiles(directoryPath).GetEnumerator();
+            while (files.MoveNext())
+            {
+               
+                string fileExtension = Path.GetExtension(Convert.ToString(files.Current));
+
+                                string fileName = Convert.ToString(files.Current).Replace(fileExtension, string.Empty);
+
+                if (fileExtension == ".jpg" || fileExtension == ".JPG")                 {
+                    try
+                    {
+                        MODI.Document md = new MODI.Document();
+                        md.Create(Convert.ToString(files.Current));
+                        md.OCR(MODI.MiLANGUAGES.miLANG_ENGLISH, true, true);
+                        MODI.Image image = (MODI.Image)md.Images[0];
+
+                       
+                        FileStream createFile = new FileStream(fileName + ".txt", FileMode.CreateNew);
+
+                        
+                        StreamWriter writeFile = new StreamWriter(createFile);
+                        writeFile.Write(image.Layout.Text);
+                        writeFile.Close();
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+II.Home.cs
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using CAR_NUMBERPLATE;
+
+namespace WindowsFormsApplication1
+{
+    public partial class home : Form
+    {
+        public home()
+        {
+            InitializeComponent();
+        }
+
+        private void eXITToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            login lgn = new login();
+            lgn.Show();
+        }
+
+        private void eXITToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            add_new an = new add_new();
+            an.Show();
+        }
+
+        private void aDDDETAILSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            adddetails add = new adddetails();
+            add.Show();
+        }
+
+       
+    }
+}
+
+
+III.Login.cs 
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Data;
+using System.Data.SqlClient;
+using System.Threading;
+
+namespace WindowsFormsApplication1
+{
+    public partial class login : Form
+    {
+        public login()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            progressBar1.Visible = false;
+            label3.Visible = false;
+            label4.Visible = false;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            label3.Visible = false;
+            label4.Visible = false;
+            if (textBox1.Text == "")
+            {
+                label3.Visible = true;
+            }
+            if (textBox2.Text == "")
+            {
+                label4.Visible = true;
+            }
+            if (textBox1.Text != "" && textBox2.Text != "")
+            {
+                progressBar1.Visible = true;
+                int i;
+
+                progressBar1.Minimum = 0;
+                progressBar1.Maximum = 200;
+
+                for (i = 0; i <= 200; i++)
+                {
+                    progressBar1.Value = i;
+                    Thread.Sleep(5);
+                }
+                label3.Visible = false;
+                label4.Visible = false;
+                DataTable dt = new DataTable();
+                dt.Rows.Clear();
+                using (SqlCommand cmd = new SqlCommand("select * from admin_master where username_=@username_ and password_=@password_", DbConnection.objConn))
+                {
+                    cmd.Parameters.AddWithValue("@username_", textBox1.Text);
+                    cmd.Parameters.AddWithValue("@password_", textBox2.Text);
+                    using (SqlDataAdapter adp = new SqlDataAdapter(cmd))
+                    {
+                        adp.Fill(dt);
+                    }
+                    if (dt.Rows.Count > 0)
+                    {
+                        home hm = new home();
+                        this.Hide();
+                        hm.Show();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid Credentails");
+                        textBox1.Text = "";
+                        textBox2.Text = "";
+                    }
+                }
+            }
+        }
+    }
+}
+
+IV. Addnew.cs
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Data;
+using System.Data.SqlClient;
+
+
+namespace WindowsFormsApplication1
+{
+    public partial class add_new : Form
+    {
+        public add_new()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (textBox2.Text == "")
+            {
+                MessageBox.Show("ALL DATA REQUIRED");
+            }
+            if (textBox3.Text == "")
+            {
+                MessageBox.Show("ALL DATA REQUIRED");
+            }
+            if (textBox4.Text == "")
+            {
+                MessageBox.Show("ALL DATA REQUIRED");
+            }
+            if (textBox6.Text == "")
+            {
+                MessageBox.Show("ALL DATA REQUIRED");
+            }
+            if (textBox5.Text == "")
+            {
+                MessageBox.Show("ALL DATA REQUIRED");
+            }
+            if (textBox7.Text == "")
+            {
+                MessageBox.Show("ALL DATA REQUIRED");
+            }
+            if (textBox8.Text == "")
+            {
+                MessageBox.Show("ALL DATA REQUIRED");
+            }
+            if (textBox2.Text != "" && textBox3.Text != "" && textBox4.Text != "" && textBox5.Text != "" && textBox6.Text != "" && textBox7.Text != "" && textBox8.Text != "")
+            {
+                
+                using (SqlCommand cmd = new SqlCommand("insert into user_details(owner_name, car_name, car_number, lisence_no, car_color, address_, issue_authority) values(@owner_name, @car_name, @car_number, @lisence_no, @car_color, @address_, @issue_authority)", DbConnection.objConn))
+                {                    cmd.Parameters.AddWithValue("@owner_name", textBox2.Text);
+                    cmd.Parameters.AddWithValue("@car_name", textBox3.Text);
+                    cmd.Parameters.AddWithValue("@car_number", textBox5.Text);
+                    cmd.Parameters.AddWithValue("@lisence_no", textBox4.Text);
+                    cmd.Parameters.AddWithValue("@car_color", textBox7.Text);
+                    cmd.Parameters.AddWithValue("@address_", textBox6.Text);
+                    cmd.Parameters.AddWithValue("@issue_authority", textBox8.Text);
+                    DbConnection.objConn.Open();
+                    cmd.ExecuteNonQuery();
+                    DbConnection.objConn.Close();
+                    MessageBox.Show("ADDED SUCCESSFULLY");
+                    textBox1.Text = "";
+                    textBox2.Text = "";
+                    textBox3.Text = "";
+                    textBox4.Text = "";
+                    textBox5.Text = "";
+                    textBox6.Text = "";
+                    textBox7.Text = "";
+                    textBox8.Text = "";
+                }
+            }
+        }
+
+        private void add_new_Load(object sender, EventArgs e)
+        {
+            DataTable dt1 = new DataTable();
+            using (SqlCommand cmdd = new SqlCommand("SELECT IDENT_CURRENT('user_details')+1 ", DbConnection.objConn))
+            {
+                using (SqlDataAdapter adpp = new SqlDataAdapter(cmdd))
+                {
+                    adpp.Fill(dt1);
+                }
+                textBox1.Text = dt1.Rows[0].ItemArray[0].ToString();
+            }
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog op = new OpenFileDialog();
+            op.Title = "Select Image File";
+            op.FileName = "*.jpg";
+            if (op.ShowDialog() == DialogResult.OK)
+            {
+                
+                {
+                    try
+                    {
+                
+                        MODI.Document ModiObj = new MODI.Document();
+                        ModiObj.Create(op.FileName);
+                        ModiObj.OCR(MODI.MiLANGUAGES.miLANG_ENGLISH, true, true);
+
+                
+                        MODI.Image ModiImageObj = (MODI.Image)ModiObj.Images[0];
+
+                        System.Console.WriteLine(ModiImageObj.Layout.Text);
+                        textBox5.Text = ModiImageObj.Layout.Text;
+                        ModiObj.Close();
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("This Image hasn't a text or has a problem");
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+
